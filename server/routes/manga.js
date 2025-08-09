@@ -14,7 +14,7 @@ class MangaAPIService {
   }
 
   // Fetch popular manga from Comick
-  async getPopularManga(page = 1, limit = 20) {
+  async getPopularManga(page = 1, limit = 30) {
     try {
       const response = await axios.get(`${this.comickBaseURL}/v1.0/search`, {
         params: {
@@ -34,7 +34,7 @@ class MangaAPIService {
   }
 
   // Fetch latest manga from Comick
-  async getLatestManga(page = 1, limit = 20) {
+  async getLatestManga(page = 1, limit = 30) {
     try {
       const response = await axios.get(`${this.comickBaseURL}/v1.0/search`, {
         params: {
@@ -275,7 +275,7 @@ router.get('/popular', async (req, res) => {
         status: item.status,
         rating: item.rating,
         chapters: item.chapters,
-        genre: item.genres,
+        genre: item.genres || [], // Make sure it's an array
         summary: item.summary,
         author: item.author,
         year: item.year,
@@ -318,7 +318,7 @@ router.get('/latest', async (req, res) => {
         status: item.status,
         rating: item.rating,
         chapters: item.chapters,
-        genre: item.genres,
+        genre: item.genres || [], // Make sure it's an array
         summary: item.summary,
         author: item.author,
         year: item.year,

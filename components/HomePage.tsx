@@ -23,11 +23,18 @@ export function HomePage() {
 
   // Load manga data based on active filter
   useEffect(() => {
+    console.log('HomePage mounted, loading initial data');
     loadMangaData();
   }, [activeFilter]);
 
+  // Also add a useEffect to run on component mount
+  useEffect(() => {
+    console.log('HomePage component mounted');
+  }, []);
+
   const loadMangaData = async (isLoadMore = false) => {
     try {
+      console.log('Loading manga data, filter:', activeFilter, 'page:', isLoadMore ? page + 1 : 1);
       setLoading(true);
       setError(null);
       
@@ -37,12 +44,13 @@ export function HomePage() {
       if (activeFilter === 'history') {
         // Load user's reading history
         try {
+          console.log('Fetching user history...');
           apiResponse = await userAPI.getHistory(currentPage, 20);
           // Transform history data to manga format
           const historyManga = apiResponse.history.map((item: any) => ({
             id: item.mangaId,
             title: item.title,
-            image: item.image,
+            image: item.image || 'https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?cs=srgb&dl=pexels-anjana-c-169994-674010.jpg&fm=jpg',
             status: 'Ongoing',
             rating: 0,
             chapters: item.chapterNumber || 0,
@@ -53,15 +61,18 @@ export function HomePage() {
             category: 'history'
           }));
           apiResponse = { manga: historyManga };
-        } catch {
+        } catch (historyError) {
+          console.log('History fetch failed:', historyError);
           // If not authenticated, show empty history
           apiResponse = { manga: [] };
         }
       } else if (searchQuery) {
         // Search manga
+        console.log('Searching manga for:', searchQuery);
         apiResponse = await mangaAPI.search(searchQuery, currentPage, 20);
       } else {
         // Load by category
+        console.log('Loading by category:', activeFilter);
         switch (activeFilter) {
           case 'popular':
             apiResponse = await mangaAPI.getPopular(currentPage, 20);
@@ -75,6 +86,8 @@ export function HomePage() {
             break;
         }
       }
+
+      console.log('API Response:', apiResponse);
 
       // Transform API data to match our Manga interface
       const transformedManga = apiResponse.manga.map((item: any) => ({
@@ -94,6 +107,8 @@ export function HomePage() {
         chapterList: [] // Will be loaded when needed
       }));
 
+      console.log('Transformed manga:', transformedManga.length, 'items');
+
       if (isLoadMore) {
         setMangaData(prev => [...prev, ...transformedManga]);
         setPage(currentPage);
@@ -107,6 +122,7 @@ export function HomePage() {
       console.error('Error loading manga data:', err);
       setError(err.message || 'Failed to load manga data');
       // Fallback to mock data
+      console.log('Using mock data fallback');
       if (!isLoadMore) {
         setMangaData(mockManga.filter(manga => 
           activeFilter === 'all' || manga.category === activeFilter
@@ -126,7 +142,7 @@ export function HomePage() {
     }, 500); // Debounce search
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+  }, [searchQuery]); // Add loadMangaData to dependencies if needed
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

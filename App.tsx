@@ -38,7 +38,7 @@ export default function App() {
     }
     return 'dark';
   });
-  const [currentPage, setCurrentPage] = useState('intro');
+  const [currentPage, setCurrentPage] = useState('intro'); // Start on intro/landing page
   const [pageData, setPageData] = useState<any>(null);
 
   const toggleTheme = () => {
